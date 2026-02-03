@@ -3,67 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <title>Alaska Earthquake Map</title>
-    <!-- We use the standard links, but I've added a 'crossorigin' attribute to help GitHub/CORB -->
-    <link rel="stylesheet" href="https://unpkg.com" crossorigin=""/>
-    <script src="https://unpkg.com" crossorigin=""></script>
-    <script src="https://cdnjs.cloudflare.com" crossorigin=""></script>
-
+    
+    <!-- 1. ESSENTIAL LEAFLET CSS (Pasted directly to bypass block) -->
     <style>
-        html, body { height: 100%; margin: 0; }
-        #mapdiv { height: 100vh; width: 100%; background: #e0e0e0; }
+        .leaflet-container { overflow: hidden; }
+        .leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer { position: absolute; left: 0; top: 0; }
+        .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow { user-select: none; -webkit-user-drag: none; }
+        .leaflet-tile { filter: inherit; visibility: hidden; }
+        .leaflet-tile-loaded { visibility: inherit; }
+        .leaflet-zoom-animated { transform-origin: 0 0; }
+        .leaflet-map-pane svg { pointer-events: none; }
+        .leaflet-marker-icon, .leaflet-marker-shadow { display: block; }
+        #mapdiv { height: 100vh; width: 100%; background: #ddd; }
+        body { margin: 0; }
     </style>
+
+    <!-- 2. ROBUST SCRIPT LINKS (Using Cloudflare) -->
+    <script src="https://cdnjs.cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com"></script>
 </head>
 <body>
 
 <div id="mapdiv"></div>
 
 <script>
-    // 1. Initialize Map
+    // Initialize map immediately
     var mymap = L.map('mapdiv').setView([64.0, -150.0], 4);
 
-    // 2. Add Tiles (HTTPS is mandatory for GitHub)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(mymap);
 
-    // 3. Load CSV - We use a relative path to avoid CORB blocks
-    function loadData() {
+    // Function to parse the CSV
+    function startMapping() {
         Papa.parse("Alaska Earthquakes to Print.csv", {
             download: true,
             header: true,
             dynamicTyping: true,
-            skipEmptyLines: true,
             complete: function(results) {
-                console.log("Rows parsed: ", results.data.length);
-                
                 results.data.forEach(function(row) {
-                    // Match these names EXACTLY to your CSV headers
-                    var lat = row.latitude;
-                    var lon = row.longitude;
-                    var depth = row.depth;
-                    var place = row.place || "Unknown Location";
-
-                    if (lat && lon) {
-                        // Create circle: radius is depth * 500 meters
-                        L.circle([lat, lon], {
-                            radius: (depth || 1) * 500,
+                    if (row.latitude && row.longitude) {
+                        // Creating the circles
+                        L.circle([row.latitude, row.longitude], {
+                            radius: (row.depth || 1) * 500,
                             color: 'red',
-                            fillColor: '#f03',
                             fillOpacity: 0.5
                         })
-                        .bindPopup(`<b>${place}</b><br>Depth: ${depth} km`)
+                        .bindPopup("<b>" + (row.place || "Earthquake") + "</b><br>Depth: " + row.depth + "km")
                         .addTo(mymap);
                     }
                 });
-            },
-            error: function(err) {
-                console.error("CSV Load Error:", err);
             }
         });
     }
 
-    // Delay start slightly to ensure libraries are ready
-    setTimeout(loadData, 500);
+    // Check if libraries loaded, then run
+    window.onload = function() {
+        if (typeof L !== 'undefined' && typeof Papa !== 'undefined') {
+            startMapping();
+        } else {
+            alert("Security settings are still blocking the map scripts.");
+        }
+    };
 </script>
 </body>
 </html>
