@@ -3,51 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Alaska Earthquake Map</title>
-    <!-- Use the most 'trusted' CDN on the web (Cloudflare) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
+    <!-- We try Cloudflare one last time with 'anonymous' access to bypass CORB -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com" crossorigin="anonymous"></script>
+
     <style>
-        html, body, #mapdiv { height: 100%; width: 100%; margin: 0; padding: 0; background: #eee; }
+        html, body { height: 100%; margin: 0; }
+        #mapdiv { height: 100vh; width: 100%; background: #ced4da; }
+        .error-overlay { position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999; display: none; }
     </style>
 </head>
 <body>
-    <div id="mapdiv"></div>
 
-    <!-- Load Scripts from Cloudflare -->
-    <script src="https://cdnjs.cloudflare.com"></script>
-    <script src="https://cdnjs.cloudflare.com"></script>
+<div id="error" class="error-overlay">Error: Map libraries are being blocked by your network.</div>
+<div id="mapdiv"></div>
 
-    <script>
-        // Use a function to wait until libraries exist
-        function init() {
-            if (typeof L === 'undefined' || typeof Papa === 'undefined') {
-                console.log("Retrying in 500ms...");
-                setTimeout(init, 500);
-                return;
+<script>
+    // 1. Error handling: Show message if L is missing
+    if (typeof L === 'undefined') {
+        document.getElementById('error').style.display = 'block';
+    } else {
+        var mymap = L.map('mapdiv').setView([64.0, -150.0], 4);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mymap);
+
+        // 2. Load the CSV
+        // IMPORTANT: Ensure "Alaska Earthquakes to Print.csv" is in your GitHub folder!
+        Papa.parse("Alaska Earthquakes to Print.csv", {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+                console.log("Data loaded:", results.data);
+                results.data.forEach(function(row) {
+                    if (row.latitude && row.longitude) {
+                        L.circle([row.latitude, row.longitude], {
+                            radius: (row.depth || 1) * 800, // Slightly larger for visibility
+                            color: 'red',
+                            fillOpacity: 0.4
+                        })
+                        .bindPopup(`<b>${row.place}</b><br>Magnitude: ${row.magnitude}<br>Depth: ${row.depth}km`)
+                        .addTo(mymap);
+                    }
+                });
+            },
+            error: function() {
+                console.error("The CSV file could not be read.");
             }
-
-            var mymap = L.map('mapdiv').setView([64.0, -150.0], 4);
-            
-            // Standard Tile Layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
-
-            Papa.parse("Alaska Earthquakes to Print.csv", {
-                download: true,
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                    results.data.forEach(function(row) {
-                        if (row.latitude && row.longitude) {
-                            L.circle([row.latitude, row.longitude], {
-                                radius: (row.depth || 1) * 500,
-                                color: 'red',
-                                fillOpacity: 0.5
-                            }).addTo(mymap);
-                        }
-                    });
-                }
-            });
-        }
-        init();
-    </script>
+        });
+    }
+</script>
 </body>
 </html>
