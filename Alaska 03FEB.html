@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Alaska Earthquake Map</title>
-    <!-- Leaflet CSS & JS -->
+    <!-- Secure HTTPS Leaflet Links -->
     <link rel="stylesheet" href="https://unpkg.com" />
     <script src="https://unpkg.com"></script>
     
-    <!-- FIXED PapaParse Library Link -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Secure HTTPS PapaParse Link -->
+    <script src="https://cdnjs.cloudflare.com"></script>
 
     <style>
         body { margin:0; padding:0; }
@@ -19,28 +20,27 @@
 <div id="mapdiv"></div>
 
 <script>
-    // Adjust view to show more of Alaska
+    // Initialize map centered on Alaska
     var mymap = L.map('mapdiv').setView([64.0, -150.0], 4);
 
-    // FIXED: Changed 'http' to 'https' to prevent GitHub security blocks
+    // FIXED: Using HTTPS for the tile layer to satisfy GitHub security
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
     }).addTo(mymap);
 
     function loadCSV() {
-        // Ensure this filename matches EXACTLY what you uploaded to GitHub
+        // Ensure this filename matches your GitHub file EXACTLY
         Papa.parse("Alaska Earthquakes to Print.csv", {
             download: true,
             header: true,
             dynamicTyping: true,
             complete: function(results) {
-                console.log("Data loaded:", results.data.length, "rows");
                 results.data.forEach(function(row) {
-                    // Check if latitude and longitude exist in this row
-                    if (row.latitude && row.longitude) {
+                    // Only draw if latitude and longitude are valid numbers
+                    if (typeof row.latitude === 'number' && typeof row.longitude === 'number') {
                         L.circle([row.latitude, row.longitude], {
-                            radius: (row.depth || 1) * 500, // Multiplier for visibility
+                            radius: (row.depth || 1) * 500, // Multiplier to make depth visible
                             color: 'red',
                             fillColor: '#f03',
                             fillOpacity: 0.5
@@ -51,9 +51,6 @@
                         .addTo(mymap);
                     }
                 });
-            },
-            error: function(err) {
-                console.error("Error loading CSV:", err);
             }
         });
     }
