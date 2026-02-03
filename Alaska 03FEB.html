@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Alaska Earthquake Map</title>
-    
-    <!-- Using Cloudflare CDN for Leaflet CSS - often more reliable on GitHub -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
-    
-    <!-- Leaflet JS -->
-    <script src="https://cdnjs.cloudflare.com"></script>
-    
-    <!-- PapaParse JS -->
-    <script src="https://cdnjs.cloudflare.com"></script>
+    <!-- We use the standard links, but I've added a 'crossorigin' attribute to help GitHub/CORB -->
+    <link rel="stylesheet" href="https://unpkg.com" crossorigin=""/>
+    <script src="https://unpkg.com" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com" crossorigin=""></script>
 
     <style>
-        /* Ensuring the map fills the screen even if the external CSS is slow */
-        html, body { height: 100%; margin: 0; padding: 0; }
-        #mapdiv { height: 100vh; width: 100%; background: #ddd; }
+        html, body { height: 100%; margin: 0; }
+        #mapdiv { height: 100vh; width: 100%; background: #e0e0e0; }
     </style>
 </head>
 <body>
@@ -24,38 +18,52 @@
 <div id="mapdiv"></div>
 
 <script>
-    // Initialize map
+    // 1. Initialize Map
     var mymap = L.map('mapdiv').setView([64.0, -150.0], 4);
 
-    // Using HTTPS and a standard tile provider
+    // 2. Add Tiles (HTTPS is mandatory for GitHub)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; OpenStreetMap'
     }).addTo(mymap);
 
-    // Load CSV
-    Papa.parse("Alaska Earthquakes to Print.csv", {
-        download: true,
-        header: true,
-        dynamicTyping: true,
-        complete: function(results) {
-            console.log("Found " + results.data.length + " rows in CSV");
-            results.data.forEach(function(row) {
-                if (row.latitude && row.longitude) {
-                    // Radius = depth (km) * 500 (meters)
-                    var depthRadius = (row.depth > 0) ? row.depth * 500 : 500;
-                    
-                    L.circle([row.latitude, row.longitude], {
-                        radius: depthRadius,
-                        color: 'red',
-                        weight: 1,
-                        fillOpacity: 0.4
-                    })
-                    .bindPopup("<b>" + row.place + "</b><br>Depth: " + row.depth + "km")
-                    .addTo(mymap);
-                }
-            });
-        }
-    });
+    // 3. Load CSV - We use a relative path to avoid CORB blocks
+    function loadData() {
+        Papa.parse("Alaska Earthquakes to Print.csv", {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                console.log("Rows parsed: ", results.data.length);
+                
+                results.data.forEach(function(row) {
+                    // Match these names EXACTLY to your CSV headers
+                    var lat = row.latitude;
+                    var lon = row.longitude;
+                    var depth = row.depth;
+                    var place = row.place || "Unknown Location";
+
+                    if (lat && lon) {
+                        // Create circle: radius is depth * 500 meters
+                        L.circle([lat, lon], {
+                            radius: (depth || 1) * 500,
+                            color: 'red',
+                            fillColor: '#f03',
+                            fillOpacity: 0.5
+                        })
+                        .bindPopup(`<b>${place}</b><br>Depth: ${depth} km`)
+                        .addTo(mymap);
+                    }
+                });
+            },
+            error: function(err) {
+                console.error("CSV Load Error:", err);
+            }
+        });
+    }
+
+    // Delay start slightly to ensure libraries are ready
+    setTimeout(loadData, 500);
 </script>
 </body>
 </html>
