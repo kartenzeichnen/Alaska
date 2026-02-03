@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Alaska Earthquake Map</title>
-    <!-- Secure HTTPS Leaflet Links -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <script src="https://unpkg.com"></script>
     
-    <!-- Secure HTTPS PapaParse Link -->
+    <!-- Using Cloudflare CDN for Leaflet CSS - often more reliable on GitHub -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com" />
+    
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com"></script>
+    
+    <!-- PapaParse JS -->
     <script src="https://cdnjs.cloudflare.com"></script>
 
     <style>
-        body { margin:0; padding:0; }
-        #mapdiv { position:absolute; top:0; bottom:0; width:100%; }
+        /* Ensuring the map fills the screen even if the external CSS is slow */
+        html, body { height: 100%; margin: 0; padding: 0; }
+        #mapdiv { height: 100vh; width: 100%; background: #ddd; }
     </style>
 </head>
 <body>
@@ -20,42 +24,38 @@
 <div id="mapdiv"></div>
 
 <script>
-    // Initialize map centered on Alaska
+    // Initialize map
     var mymap = L.map('mapdiv').setView([64.0, -150.0], 4);
 
-    // FIXED: Using HTTPS for the tile layer to satisfy GitHub security
+    // Using HTTPS and a standard tile provider
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mymap);
 
-    function loadCSV() {
-        // Ensure this filename matches your GitHub file EXACTLY
-        Papa.parse("Alaska Earthquakes to Print.csv", {
-            download: true,
-            header: true,
-            dynamicTyping: true,
-            complete: function(results) {
-                results.data.forEach(function(row) {
-                    // Only draw if latitude and longitude are valid numbers
-                    if (typeof row.latitude === 'number' && typeof row.longitude === 'number') {
-                        L.circle([row.latitude, row.longitude], {
-                            radius: (row.depth || 1) * 500, // Multiplier to make depth visible
-                            color: 'red',
-                            fillColor: '#f03',
-                            fillOpacity: 0.5
-                        })
-                        .bindPopup(`<b>Location:</b> ${row.place}<br>
-                                    <b>Magnitude:</b> ${row.magnitude}<br>
-                                    <b>Depth:</b> ${row.depth} km`)
-                        .addTo(mymap);
-                    }
-                });
-            }
-        });
-    }
-
-    loadCSV();
+    // Load CSV
+    Papa.parse("Alaska Earthquakes to Print.csv", {
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+            console.log("Found " + results.data.length + " rows in CSV");
+            results.data.forEach(function(row) {
+                if (row.latitude && row.longitude) {
+                    // Radius = depth (km) * 500 (meters)
+                    var depthRadius = (row.depth > 0) ? row.depth * 500 : 500;
+                    
+                    L.circle([row.latitude, row.longitude], {
+                        radius: depthRadius,
+                        color: 'red',
+                        weight: 1,
+                        fillOpacity: 0.4
+                    })
+                    .bindPopup("<b>" + row.place + "</b><br>Depth: " + row.depth + "km")
+                    .addTo(mymap);
+                }
+            });
+        }
+    });
 </script>
 </body>
 </html>
