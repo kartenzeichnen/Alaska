@@ -26,10 +26,12 @@
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    function getColor(depth) {
-        if (depth < 10) return "yellow";
-        if (depth < 50) return "orange";
-        return "red";
+function getColor(depth) {
+    if (depth <= 40) return "#ffff66";   // yellow
+    if (depth <= 90) return "#3399ff";   // blue
+    if (depth <= 140) return "#ff9933";  // orange
+    return "#9933cc";                    // purple
+
     }
 
     Papa.parse("Alaska Earthquakes to Print.csv", {
@@ -38,17 +40,11 @@
         dynamicTyping: true,
         complete: function(results) {
 
-
-
-
-
-
-
 results.data.forEach(function(eq) {
 
     const lat = Number(eq.latitude);
     const lon = Number(eq.longitude);
-    const mag = Number(eq.magnitude);
+    const mag = Number(eq.mag);
     const depth = Number(eq.depth);
 
     // Skip invalid rows
@@ -62,7 +58,7 @@ results.data.forEach(function(eq) {
     }
 
     L.circleMarker([lat, lon], {
-        radius: Math.max(mag * 3, 2), // prevent zero/NaN radius
+        radius: Math.max(mag * 1.1, 2), // prevent zero/NaN radius
         color: getColor(depth),
         fillOpacity: 0.7
     })
@@ -72,10 +68,6 @@ results.data.forEach(function(eq) {
     `)
     .addTo(map);
 });
-
-
-
-
 
         }
     });
@@ -90,6 +82,11 @@ results.data.forEach(function(eq) {
 
 
 
+Right now, the map is providing three colored circles (yellow, orange, and red) based on depth.  I would like to change that to four different colors: yellow, blue, orange, and purple based on the following depths: 0-40; 40.1-90; 90.1-140; more than 140.1.  How can I change the following code:
+    function getColor(depth) {
+        if (depth < 10) return "yellow";
+        if (depth < 50) return "orange";
+        return "red";
 
 
 
