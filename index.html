@@ -44,23 +44,39 @@
 
 
 
-            results.data.forEach(function(eq) {
+results.data.forEach(function(eq) {
 
-                if (!eq.latitude || !eq.longitude) return;
+    const lat = Number(eq.latitude);
+    const lon = Number(eq.longitude);
+    const mag = Number(eq.magnitude);
+    const depth = Number(eq.depth);
 
-                L.circleMarker([eq.latitude, eq.longitude], {
-                    radius: eq.mag * 3,
-                    color: getColor(eq.depth),
-                    fillOpacity: 0.7
-                })
-                .bindPopup(`
-                    <b>Magnitude:</b> ${eq.mag}<br>
-                    <b>Depth:</b> ${eq.depth} km<br>
-                    <b>Date:</b> ${eq.time}<br>
-                    <b>Location:</b> ${eq.place}
-                `)
-                .addTo(map);
-            });
+    // Skip invalid rows
+    if (
+        !isFinite(lat) ||
+        !isFinite(lon) ||
+        !isFinite(mag) ||
+        !isFinite(depth)
+    ) {
+        return;
+    }
+
+    L.circleMarker([lat, lon], {
+        radius: Math.max(mag * 3, 2), // prevent zero/NaN radius
+        color: getColor(depth),
+        fillOpacity: 0.7
+    })
+    .bindPopup(`
+        <b>Magnitude:</b> ${mag}<br>
+        <b>Depth:</b> ${depth} km
+    `)
+    .addTo(map);
+});
+
+
+
+
+
         }
     });
 </script>
