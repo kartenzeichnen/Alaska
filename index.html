@@ -38,19 +38,25 @@
         dynamicTyping: true,
         complete: function(results) {
 
+
+
+
+
+
+
             results.data.forEach(function(eq) {
 
                 if (!eq.latitude || !eq.longitude) return;
 
                 L.circleMarker([eq.latitude, eq.longitude], {
-                    radius: eq.magnitude * 3,
+                    radius: eq.mag * 3,
                     color: getColor(eq.depth),
                     fillOpacity: 0.7
                 })
                 .bindPopup(`
-                    <b>Magnitude:</b> ${eq.magnitude}<br>
+                    <b>Magnitude:</b> ${eq.mag}<br>
                     <b>Depth:</b> ${eq.depth} km<br>
-                    <b>Date:</b> ${eq.date}<br>
+                    <b>Date:</b> ${eq.time}<br>
                     <b>Location:</b> ${eq.place}
                 `)
                 .addTo(map);
@@ -61,3 +67,22 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
