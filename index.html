@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Alaska Earthquake Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        body { margin:0; padding:0; }
+        #mapdiv { height: 100vh; width: 100vw; }
+    </style>
+</head>
+<body>
+
+<div id="mapdiv"></div>
+
+<script>
+    var map = L.map('mapdiv').setView([64.0, -150.0], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    function getColor(depth) {
+        if (depth < 10) return "yellow";
+        if (depth < 50) return "orange";
+        return "red";
+    }
+
+    Papa.parse("Alaska Earthquakes to Print.csv", {
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+
+            results.data.forEach(function(eq) {
+
+                if (!eq.latitude || !eq.longitude) return;
+
+                L.circleMarker([eq.latitude, eq.longitude], {
+                    radius: eq.magnitude * 3,
+                    color: getColor(eq.depth),
+                    fillOpacity: 0.7
+                })
+                .bindPopup(`
+                    <b>Magnitude:</b> ${eq.magnitude}<br>
+                    <b>Depth:</b> ${eq.depth} km<br>
+                    <b>Date:</b> ${eq.date}<br>
+                    <b>Location:</b> ${eq.place}
+                `)
+                .addTo(map);
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
