@@ -4,42 +4,39 @@
     <title>Alaska Earthquake Map</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Added Font Awesome for the shapes -->
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         body { margin:0; padding:0; }
         #mapdiv { height: 100vh; width: 100vw; }
 
-        /* Styling for the legend and icons */
-        .legend {
-            background: white;
-            padding: 10px;
-            line-height: 18px;
-            color: #333;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        }
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.8;
-            text-align: center;
-        }
-        
-        /* Custom Icon Styling */
-        .shape-icon {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+.legend {
+    background: white;
+    padding: 10px;
+    line-height: 18px;
+    color: #333;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.legend h4 {
+    margin: 0 0 5px;
+    font-size: 14px;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.8;
+}
     </style>
+
+
 </head>
 <body>
 
@@ -53,64 +50,70 @@
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    // Function to determine which shape and color to use
-    function getShapeInfo(depth) {
-        if (depth <= 40) {
-            return { color: "#ffff66", html: '<i class="fa-solid fa-circle"></i>' };
-        } else if (depth <= 90) {
-            return { color: "#3399ff", html: '<i class="fa-solid fa-square"></i>' };
-        } else if (depth <= 140) {
-            return { color: "#ff9933", html: '<i class="fa-solid fa-caret-up" style="font-size:1.4em"></i>' }; // Triangle
-        } else {
-            return { color: "#9933cc", html: '<i class="fa-solid fa-star"></i>' };
-        }
+function getColor(depth) {
+    if (depth <= 40) return "#ffff66";   // yellow
+    if (depth <= 90) return "#3399ff";   // blue
+    if (depth <= 140) return "#ff9933";  // orange
+    return "#9933cc";                    // purple
+
     }
 
-    // Legend Setup
-    var legend = L.control({ position: "bottomright" });
-    legend.onAdd = function (map) {
-        var div = L.DomUtil.create("div", "info legend");
-        div.innerHTML = `
-            <h4>Earthquake Depth (km)</h4>
-            <i class="fa-solid fa-circle" style="color:#ffff66"></i> 0–40<br>
-            <i class="fa-solid fa-square" style="color:#3399ff"></i> 40.1–90<br>
-            <i class="fa-solid fa-caret-up" style="color:#ff9933"></i> 90.1–140<br>
-            <i class="fa-solid fa-star" style="color:#9933cc"></i> > 140.1
-        `;
-        return div;
-    };
-    legend.addTo(map);
+
+var legend = L.control({ position: "bottomright" });
+
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create("div", "info legend");
+
+    div.innerHTML = `
+        <h4>Earthquake Depth (km)</h4>
+        <i style="background:#ffff66"></i> 0–40<br>
+        <i style="background:#3399ff"></i> 40.1–90<br>
+        <i style="background:#ff9933"></i> 90.1–140<br>
+        <i style="background:#9933cc"></i> > 140.1
+    `;
+
+    return div;
+};
+
+legend.addTo(map);
+
+
 
     Papa.parse("Alaska Earthquakes to Print.csv", {
         download: true,
         header: true,
         dynamicTyping: true,
         complete: function(results) {
-            results.data.forEach(function(eq) {
-                const lat = Number(eq.latitude);
-                const lon = Number(eq.longitude);
-                const mag = Number(eq.mag);
-                const depth = Number(eq.depth);
 
-                if (!isFinite(lat) || !isFinite(lon) || !isFinite(mag) || !isFinite(depth)) return;
+results.data.forEach(function(eq) {
 
-                const shapeInfo = getShapeInfo(depth);
-                const iconSize = Math.max(mag * 5, 10); // Adjust size based on magnitude
+    const lat = Number(eq.latitude);
+    const lon = Number(eq.longitude);
+    const mag = Number(eq.mag);
+    const depth = Number(eq.depth);
 
-                // Create a DivIcon to hold the Font Awesome shape
-                var customIcon = L.divIcon({
-                    className: 'shape-icon',
-                    html: `<div style="color: ${shapeInfo.color}; font-size: ${iconSize}px; text-shadow: 1px 1px 2px #000;">
-                                ${shapeInfo.html}
-                           </div>`,
-                    iconSize: [iconSize, iconSize],
-                    iconAnchor: [iconSize/2, iconSize/2]
-                });
+    // Skip invalid rows
+    if (
+        !isFinite(lat) ||
+        !isFinite(lon) ||
+        !isFinite(mag) ||
+        !isFinite(depth)
+    ) {
+        return;
+    }
 
-                L.marker([lat, lon], { icon: customIcon })
-                .bindPopup(`<b>Magnitude:</b> ${mag}<br><b>Depth:</b> ${depth} km`)
-                .addTo(map);
-            });
+    L.circleMarker([lat, lon], {
+        radius: Math.max(mag * 1.1, 2), // prevent zero/NaN radius
+        color: getColor(depth),
+        fillOpacity: 0.7
+    })
+    .bindPopup(`
+        <b>Magnitude:</b> ${mag}<br>
+        <b>Depth:</b> ${depth} km
+    `)
+    .addTo(map);
+});
+
         }
     });
 </script>
