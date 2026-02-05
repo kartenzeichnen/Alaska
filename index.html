@@ -1,36 +1,121 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <title>Alaska Earthquake Map</title>
 
-<title>Alaska Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-   crossorigin=""/>
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-   crossorigin=""></script>
+    <style>
+        body { margin:0; padding:0; }
+        #mapdiv { height: 100vh; width: 100vw; }
 
+.legend {
+    background: white;
+    padding: 10px;
+    line-height: 18px;
+    color: #333;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
 
-<style>
-    body { margin:0; padding:0; }
-    #mapdiv { position:absolute; top:0; bottom:0; width:100%; }
-</style>
+.legend h4 {
+    margin: 0 0 5px;
+    font-size: 14px;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.8;
+}
+    </style>
+
 
 </head>
-
-
 <body>
 
 <div id="mapdiv"></div>
-<script>
-var mymap = L.map('mapdiv').setView([58, -150], 6);
 
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a>'
-    }).addTo(mymap);
+<script>
+    var map = L.map('mapdiv').setView([64.0, -150.0], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+function getColor(depth) {
+    if (depth <= 40) return "#ffff66";   // yellow
+    if (depth <= 90) return "#3399ff";   // blue
+    if (depth <= 140) return "#ff9933";  // orange
+    return "#9933cc";                    // purple
+
+    }
+
+
+var legend = L.control({ position: "bottomright" });
+
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create("div", "info legend");
+
+    div.innerHTML = `
+        <h4>Earthquake Depth (km)</h4>
+        <i style="background:#ffff66"></i> 0–40<br>
+        <i style="background:#3399ff"></i> 40.1–90<br>
+        <i style="background:#ff9933"></i> 90.1–140<br>
+        <i style="background:#9933cc"></i> > 140.1
+    `;
+
+    return div;
+};
+
+legend.addTo(map);
+
+
+
+    Papa.parse("Alaska Earthquakes to Print.csv", {
+        download: true,
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+
+results.data.forEach(function(eq) {
+
+    const lat = Number(eq.latitude);
+    const lon = Number(eq.longitude);
+    const mag = Number(eq.mag);
+    const depth = Number(eq.depth);
+
+    // Skip invalid rows
+    if (
+        !isFinite(lat) ||
+        !isFinite(lon) ||
+        !isFinite(mag) ||
+        !isFinite(depth)
+    ) {
+        return;
+    }
+
+    L.circleMarker([lat, lon], {
+        radius: Math.max(mag * 1.1, 2), // prevent zero/NaN radius
+        color: getColor(depth),
+        fillOpacity: 0.7
+    })
+    .bindPopup(`
+        <b>Magnitude:</b> ${mag}<br>
+        <b>Depth:</b> ${depth} km
+    `)
+    .addTo(map);
+});
+
+        }
+    });
 </script>
 
 </body>
