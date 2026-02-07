@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -43,12 +44,22 @@
 <div id="mapdiv"></div>
 
 <script>
-    var map = L.map('mapdiv').setView([64.0, -150.0], 5);
+    var map = L.map('mapdiv').setView([64.0, -150.0], 6);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
+
+
+L.control.scale({
+    position: 'bottomleft',
+    imperial: true,  // miles
+    metric: true     // kilometers
+}).addTo(map);
+
+
+
 
 function getColor(depth) {
     if (depth <= 40) return "#ffff66";   // yellow
