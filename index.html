@@ -22,6 +22,16 @@
     color: #333;
     border-radius: 5px;
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    margin-bottom: 10px; /* allows stacking */
+}
+
+.legend .circle {
+    display: inline-block;
+    border-radius: 50%;
+    background: #666;
+    opacity: 0.7;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 .legend h4 {
@@ -76,7 +86,7 @@ L.control.scale({
 
 
 
-var compassRose = L.control({ position: 'bottomleft' });
+var compassRose = L.control({ position: 'topright' });
 
 compassRose.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'compass-rose');
@@ -164,6 +174,38 @@ legend.onAdd = function (map) {
 };
 
 legend.addTo(map);
+
+
+var magLegend = L.control({ position: "bottomright" });
+
+magLegend.onAdd = function (map) {
+    var div = L.DomUtil.create("div", "info legend");
+
+    var mags = [3, 5, 7];  // example magnitudes
+
+    div.innerHTML = `<h4>Magnitude</h4>`;
+
+    mags.forEach(function (m) {
+        var size = Math.max(m * 1.1, 2);
+
+        div.innerHTML += `
+            <div>
+                <span class="circle" style="width:${size * 2}px; height:${size * 2}px;"></span>
+                M ${m}
+            </div>
+        `;
+    });
+
+    return div;
+};
+
+magLegend.addTo(map);
+
+
+
+
+
+
 
 
 
