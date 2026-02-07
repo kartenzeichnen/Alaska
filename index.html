@@ -39,19 +39,11 @@ I have the following html file in GitHub.  I would like to modify it so that the
 }
 
 
-.north-arrow {
+.compass-rose {
     background: white;
     padding: 6px;
-    border-radius: 5px;
+    border-radius: 6px;
     box-shadow: 0 0 8px rgba(0,0,0,0.3);
-    text-align: center;
-    font-weight: bold;
-    line-height: 1;
-}
-
-.north-arrow span {
-    font-size: 20px;
-    display: block;
 }
 
 
@@ -83,18 +75,41 @@ L.control.scale({
 }).addTo(map);
 
 
-var northArrow = L.control({ position: 'topright' });
 
-northArrow.onAdd = function (map) {
-    var div = L.DomUtil.create('div', 'north-arrow');
+
+var compassRose = L.control({ position: 'topright' });
+
+compassRose.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'compass-rose');
+
     div.innerHTML = `
-        <span>↑</span>
-        N
+    <svg width="60" height="60" viewBox="0 0 100 100" aria-label="Compass Rose">
+        <!-- Outer circle -->
+        <circle cx="50" cy="50" r="45" fill="white" stroke="black" stroke-width="2"/>
+
+        <!-- North arrow -->
+        <polygon points="50,10 40,50 50,45 60,50"
+                 fill="black"/>
+
+        <!-- South arrow -->
+        <polygon points="50,90 40,50 50,55 60,50"
+                 fill="#999"/>
+
+        <!-- Cross lines -->
+        <line x1="50" y1="5" x2="50" y2="95" stroke="black" stroke-width="1"/>
+        <line x1="5" y1="50" x2="95" y2="50" stroke="black" stroke-width="1"/>
+
+        <!-- N label -->
+        <text x="50" y="20" text-anchor="middle"
+              font-size="14" font-weight="bold">N</text>
+    </svg>
     `;
+
     return div;
 };
 
-northArrow.addTo(map);
+compassRose.addTo(map);
+
 
 
 
