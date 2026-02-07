@@ -1,3 +1,5 @@
+I have the following html file in GitHub.  I would like to modify it so that the map also prints a dual scale with kilometers and miles at the bottom left corner of the map.
+
 
 <!doctype html>
 <html lang="en">
@@ -35,6 +37,28 @@
     margin-right: 8px;
     opacity: 0.8;
 }
+
+
+.north-arrow {
+    background: white;
+    padding: 6px;
+    border-radius: 5px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    text-align: center;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.north-arrow span {
+    font-size: 20px;
+    display: block;
+}
+
+
+
+
+
+
     </style>
 
 
@@ -44,7 +68,7 @@
 <div id="mapdiv"></div>
 
 <script>
-    var map = L.map('mapdiv').setView([64.0, -150.0], 6);
+    var map = L.map('mapdiv').setView([58.0, -150.0], 6);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
@@ -58,6 +82,19 @@ L.control.scale({
     metric: true     // kilometers
 }).addTo(map);
 
+
+var northArrow = L.control({ position: 'topright' });
+
+northArrow.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'north-arrow');
+    div.innerHTML = `
+        <span>↑</span>
+        N
+    `;
+    return div;
+};
+
+northArrow.addTo(map);
 
 
 
