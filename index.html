@@ -17,12 +17,32 @@
 
 .legend {
     background: white;
-    padding: 10px;
+    padding: 10px 12px;
     line-height: 18px;
     color: #333;
-    border-radius: 5px;
+    border-radius: 6px;
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    margin-bottom: 10px; /* allows stacking */
+    width: 180px;              /* forces alignment */
+    font-size: 13px;
+}
+
+.legend h4 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.legend .divider {
+    border-top: 1px solid #ccc;
+    margin: 8px 0;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.8;
 }
 
 .legend .circle {
@@ -32,19 +52,6 @@
     opacity: 0.7;
     margin-right: 8px;
     vertical-align: middle;
-}
-
-.legend h4 {
-    margin: 0 0 5px;
-    font-size: 14px;
-}
-
-.legend i {
-    width: 18px;
-    height: 18px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.8;
 }
 
 
@@ -157,10 +164,13 @@ function getColor(depth) {
     }
 
 
-var legend = L.control({ position: "bottomright" });
+var combinedLegend = L.control({ position: "bottomright" });
 
-legend.onAdd = function (map) {
+combinedLegend.onAdd = function (map) {
     var div = L.DomUtil.create("div", "info legend");
+
+    // Magnitudes to show
+    var mags = [3, 5, 7];
 
     div.innerHTML = `
         <h4>Earthquake Depth (km)</h4>
@@ -168,29 +178,18 @@ legend.onAdd = function (map) {
         <i style="background:#3399ff"></i> 40.1–90<br>
         <i style="background:#ff9933"></i> 90.1–140<br>
         <i style="background:#9933cc"></i> > 140.1
+
+        <div class="divider"></div>
+
+        <h4>Magnitude</h4>
     `;
-
-    return div;
-};
-
-legend.addTo(map);
-
-
-var magLegend = L.control({ position: "bottomright" });
-
-magLegend.onAdd = function (map) {
-    var div = L.DomUtil.create("div", "info legend");
-
-    var mags = [3, 5, 7];  // example magnitudes
-
-    div.innerHTML = `<h4>Magnitude</h4>`;
 
     mags.forEach(function (m) {
         var size = Math.max(m * 1.1, 2);
-
         div.innerHTML += `
             <div>
-                <span class="circle" style="width:${size * 2}px; height:${size * 2}px;"></span>
+                <span class="circle"
+                      style="width:${size * 2}px; height:${size * 2}px;"></span>
                 M ${m}
             </div>
         `;
@@ -199,8 +198,7 @@ magLegend.onAdd = function (map) {
     return div;
 };
 
-magLegend.addTo(map);
-
+combinedLegend.addTo(map);
 
 
 
