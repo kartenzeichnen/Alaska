@@ -1,4 +1,3 @@
-I have the following html file in GitHub.  I would like to modify it so that the map also prints a dual scale with kilometers and miles at the bottom left corner of the map.
 
 
 <!doctype html>
@@ -77,31 +76,58 @@ L.control.scale({
 
 
 
-var compassRose = L.control({ position: 'topright' });
+var compassRose = L.control({ position: 'bottomleft' });
 
 compassRose.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'compass-rose');
 
     div.innerHTML = `
-    <svg width="60" height="60" viewBox="0 0 100 100" aria-label="Compass Rose">
-        <!-- Outer circle -->
-        <circle cx="50" cy="50" r="45" fill="white" stroke="black" stroke-width="2"/>
+    <svg width="80" height="80" viewBox="0 0 200 200" aria-label="Compass Rose">
 
-        <!-- North arrow -->
-        <polygon points="50,10 40,50 50,45 60,50"
-                 fill="black"/>
+        <!-- Outer rings -->
+        <circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="3"/>
+        <circle cx="100" cy="100" r="85" fill="none" stroke="black" stroke-width="1"/>
 
-        <!-- South arrow -->
-        <polygon points="50,90 40,50 50,55 60,50"
-                 fill="#999"/>
+        <!-- Star points -->
+        <g transform="translate(100 100)">
+            <!-- Cardinal points -->
+            <g fill="black">
+                <polygon points="0,-80 -10,0 0,-15 10,0"/>
+                <polygon points="80,0 0,-10 15,0 0,10"/>
+                <polygon points="0,80 -10,0 0,15 10,0"/>
+                <polygon points="-80,0 0,-10 -15,0 0,10"/>
+            </g>
 
-        <!-- Cross lines -->
-        <line x1="50" y1="5" x2="50" y2="95" stroke="black" stroke-width="1"/>
-        <line x1="5" y1="50" x2="95" y2="50" stroke="black" stroke-width="1"/>
+            <!-- Intercardinal points -->
+            <g fill="#cc3333">
+                <g transform="rotate(45)">
+                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
+                </g>
+                <g transform="rotate(135)">
+                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
+                </g>
+                <g transform="rotate(225)">
+                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
+                </g>
+                <g transform="rotate(315)">
+                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
+                </g>
+            </g>
+        </g>
 
-        <!-- N label -->
-        <text x="50" y="20" text-anchor="middle"
-              font-size="14" font-weight="bold">N</text>
+        <!-- Cardinal labels -->
+        <text x="100" y="30" text-anchor="middle"
+              font-size="18" font-weight="bold">N</text>
+        <text x="170" y="105" text-anchor="middle"
+              font-size="16">E</text>
+        <text x="100" y="185" text-anchor="middle"
+              font-size="16">S</text>
+        <text x="30" y="105" text-anchor="middle"
+              font-size="16">W</text>
+
+        <!-- Center dot -->
+        <circle cx="100" cy="100" r="4" fill="black"/>
+
     </svg>
     `;
 
@@ -109,7 +135,6 @@ compassRose.onAdd = function (map) {
 };
 
 compassRose.addTo(map);
-
 
 
 
