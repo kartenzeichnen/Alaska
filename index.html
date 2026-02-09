@@ -143,8 +143,8 @@
 
 
        mags.forEach(function (m) {
-            // NEW SCALING: Using power of 1.8 for dramatic visual difference
-            var size = Math.pow(m, 1.8); 
+            // NEW SCALING: Using power of 1.7 for dramatic visual difference
+            var size = Math.pow(m, 1.7); 
             div.innerHTML += `
                 <div style="margin-bottom: 8px;">
                     <span class="circle" style="width:${size * 2}px; height:${size * 2}px;"></span>
@@ -181,7 +181,7 @@
 
 
                L.circleMarker([lat, lon], {
-                    radius: Math.pow(mag, 1.8), // Pronounced scaling
+                    radius: Math.pow(mag, 1.7), // Pronounced scaling
                     color: getColor(depth),
                     fillOpacity: 0.6,           // Slightly lowered to see overlapping markers
                     weight: 1                   // Thin border for clarity
