@@ -84,34 +84,47 @@
 
 
 
-/* 3. CUSTOM GRADUATED SCALE BAR */
+/* 3. REVISED CUSTOM GRADUATED SCALE BAR */
 var CustomScale = L.Control.extend({
     options: { position: 'bottomleft' },
     onAdd: function (map) {
         var container = L.DomUtil.create('div', 'leaflet-control-scale custom-graduated-scale');
-        container.style.background = 'rgba(255,255,255,0.8)';
-        container.style.padding = '5px';
+        
+        // Styling the container box
+        container.style.background = 'rgba(255,255,255,0.9)';
+        container.style.padding = '10px'; // Increased padding for space
         container.style.border = '2px solid #333';
-        container.style.fontSize = '10px';
+        container.style.fontSize = '12px';
+        container.style.fontFamily = 'Arial, sans-serif';
+        container.style.minWidth = '120px';
 
-        // Function to update the bar width based on zoom/latitude
         var update = function () {
             var center = map.getCenter();
-            // Calculate how many pixels represent 250km at current latitude
-            var point1 = map.latLngToContainerPoint(center);
-            var point2 = map.latLngToContainerPoint(L.latLng(center.lat, center.lng + (250 / (111.32 * Math.cos(center.lat * Math.PI / 180)))));
-            var pixelWidth250km = Math.abs(point2.x - point1.x);
+            // Calculate pixel width for 250km at current latitude
+            var p1 = map.latLngToContainerPoint(center);
+            var p2 = map.latLngToContainerPoint(L.latLng(center.lat, center.lng + (250 / (111.32 * Math.cos(center.lat * Math.PI / 180)))));
+            var pixelWidth250km = Math.abs(p2.x - p1.x);
 
             container.innerHTML = `
-                <div style="font-weight:bold; margin-bottom:2px;">Alaska Map Scale</div>
-                <div style="width:${pixelWidth250km}px; height:8px; border:1px solid black; border-top:none; display:flex;">
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-5px; top:-12px;">50</span></div>
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-8px; top:-12px;">100</span></div>
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-8px; top:-12px;">150</span></div>
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-8px; top:-12px;">200</span></div>
-                    <div style="flex:1; position:relative;"><span style="position:absolute; right:-8px; top:-12px;">250</span><span style="position:absolute; left:-130px; top:-12px;">0 km</span></div>
+                <!-- Title with bottom margin for vertical space -->
+                <div style="font-weight:bold; margin-bottom: 20px; text-align: center;">Alaska Map Scale</div>
+                
+                <div style="position: relative; width:${pixelWidth250km}px; height:10px; border:2px solid black; border-top:none; display:flex;">
+                    <!-- Fixed 0km Label -->
+                    <span style="position:absolute; left:0; top:-16px; font-weight:bold;">0 km</span>
+                    
+                    <!-- Interval Ticks and Labels -->
+                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-8px; top:-16px;">50</span></div>
+                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-10px; top:-16px;">100</span></div>
+                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-10px; top:-16px;">150</span></div>
+                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-10px; top:-16px;">200</span></div>
+                    <div style="flex:1; position:relative;"><span style="position:absolute; right:-12px; top:-16px;">250</span></div>
                 </div>
-                <div style="margin-top:12px; font-style:italic;">Graduated Miles: ${(250 * 0.621371).toFixed(0)} total mi</div>
+
+                <!-- Miles conversion label with top margin -->
+                <div style="margin-top: 8px; font-size: 11px; color: #444; border-top: 1px solid #ccc; pt: 4px;">
+                    Total: ${(250 * 0.621371).toFixed(0)} miles
+                </div>
             `;
         };
 
