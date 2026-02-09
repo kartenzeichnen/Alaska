@@ -1,250 +1,99 @@
-
-
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Alaska Earthquake Map</title>
-
+    <title>Alaska Earthquake Map - Shapes</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         body { margin:0; padding:0; }
         #mapdiv { height: 100vh; width: 100vw; }
 
-.legend {
-    background: white;
-    padding: 10px 12px;
-    line-height: 18px;
-    color: #333;
-    border-radius: 6px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    width: 180px;              /* forces alignment */
-    font-size: 13px;
-}
-
-.legend h4 {
-    margin: 0 0 6px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.legend .divider {
-    border-top: 1px solid #ccc;
-    margin: 8px 0;
-}
-
-.legend i {
-    width: 18px;
-    height: 18px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.8;
-}
-
-.legend .circle {
-    display: inline-block;
-    border-radius: 50%;
-    background: #666;
-    opacity: 0.7;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-
-.compass-rose {
-    background: white;
-    padding: 6px;
-    border-radius: 6px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.3);
-}
-
-
-
-
-
-
+        .legend {
+            background: white; padding: 10px 12px; line-height: 22px; color: #333;
+            border-radius: 6px; box-shadow: 0 0 15px rgba(0,0,0,0.2); width: 200px;
+        }
+        .legend h4 { margin: 0 0 6px; font-size: 14px; font-weight: bold; }
+        /* Style for the shape icons in the legend */
+        .legend svg { vertical-align: middle; margin-right: 8px; }
+        
+        /* Ensures the divIcon background is transparent */
+        .custom-shape-icon { background: none; border: none; }
     </style>
-
-
 </head>
 <body>
 
 <div id="mapdiv"></div>
 
 <script>
-    var map = L.map('mapdiv').setView([58.0, -150.0], 6);
+    var map = L.map('mapdiv').setView([58.0, -150.0], 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-
-L.control.scale({
-    position: 'bottomleft',
-    imperial: true,  // miles
-    metric: true     // kilometers
-}).addTo(map);
-
-
-
-
-var compassRose = L.control({ position: 'topright' });
-
-compassRose.onAdd = function (map) {
-    var div = L.DomUtil.create('div', 'compass-rose');
-
-    div.innerHTML = `
-    <svg width="80" height="80" viewBox="0 0 200 200" aria-label="Compass Rose">
-
-        <!-- Outer rings -->
-        <circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="3"/>
-        <circle cx="100" cy="100" r="85" fill="none" stroke="black" stroke-width="1"/>
-
-        <!-- Star points -->
-        <g transform="translate(100 100)">
-            <!-- Cardinal points -->
-            <g fill="black">
-                <polygon points="0,-80 -10,0 0,-15 10,0"/>
-                <polygon points="80,0 0,-10 15,0 0,10"/>
-                <polygon points="0,80 -10,0 0,15 10,0"/>
-                <polygon points="-80,0 0,-10 -15,0 0,10"/>
-            </g>
-
-            <!-- Intercardinal points -->
-            <g fill="#cc3333">
-                <g transform="rotate(45)">
-                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
-                </g>
-                <g transform="rotate(135)">
-                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
-                </g>
-                <g transform="rotate(225)">
-                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
-                </g>
-                <g transform="rotate(315)">
-                    <polygon points="0,-60 -7,0 0,-12 7,0"/>
-                </g>
-            </g>
-        </g>
-
-        <!-- Cardinal labels -->
-        <text x="100" y="30" text-anchor="middle"
-              font-size="18" font-weight="bold">N</text>
-        <text x="170" y="105" text-anchor="middle"
-              font-size="16">E</text>
-        <text x="100" y="185" text-anchor="middle"
-              font-size="16">S</text>
-        <text x="30" y="105" text-anchor="middle"
-              font-size="16">W</text>
-
-        <!-- Center dot -->
-        <circle cx="100" cy="100" r="4" fill="black"/>
-
-    </svg>
-    `;
-
-    return div;
-};
-
-compassRose.addTo(map);
-
-
-
-function getColor(depth) {
-    if (depth <= 40) return "#ffff66";   // yellow
-    if (depth <= 90) return "#3399ff";   // blue
-    if (depth <= 140) return "#ff9933";  // orange
-    return "#9933cc";                    // purple
-
+    // Helper to get shape and color based on depth
+    function getShapeData(depth, size) {
+        if (depth <= 40) {
+            // Yellow Triangle
+            return `<polygon points="${size},0 0,${size*2} ${size*2},${size*2}" fill="#ffff66" stroke="black" stroke-width="1"/>`;
+        } else if (depth <= 90) {
+            // Blue Square
+            return `<rect width="${size*2}" height="${size*2}" fill="#3399ff" stroke="black" stroke-width="1"/>`;
+        } else if (depth <= 140) {
+            // Orange Circle
+            return `<circle cx="${size}" cy="${size}" r="${size}" fill="#ff9933" stroke="black" stroke-width="1"/>`;
+        } else {
+            // Purple Star
+            return `<polygon points="${size},0 ${size*0.2},${size*1.9} ${size*1.9},${size*0.7} ${size*0.1},${size*0.7} ${size*1.8},${size*1.9}" fill="#9933cc" stroke="black" stroke-width="1"/>`;
+        }
     }
 
-
-var combinedLegend = L.control({ position: "bottomright" });
-
-combinedLegend.onAdd = function (map) {
-    var div = L.DomUtil.create("div", "info legend");
-
-    // Magnitudes to show
-    var mags = [3, 5, 7];
-
-    div.innerHTML = `
-        <h4>Earthquake Depth (km)</h4>
-        <i style="background:#ffff66"></i> 0–40<br>
-        <i style="background:#3399ff"></i> 40.1–90<br>
-        <i style="background:#ff9933"></i> 90.1–140<br>
-        <i style="background:#9933cc"></i> > 140.1
-
-        <div class="divider"></div>
-
-        <h4>Magnitude</h4>
-    `;
-
-    mags.forEach(function (m) {
-        var size = Math.max(m * 1.1, 2);
-        div.innerHTML += `
-            <div>
-                <span class="circle"
-                      style="width:${size * 2}px; height:${size * 2}px;"></span>
-                M ${m}
-            </div>
+    var combinedLegend = L.control({ position: "bottomright" });
+    combinedLegend.onAdd = function (map) {
+        var div = L.DomUtil.create("div", "info legend");
+        div.innerHTML = `
+            <h4>Earthquake Depth</h4>
+            <svg width="18" height="18"><polygon points="9,2 2,16 16,16" fill="#ffff66" stroke="black"/></svg> 0–40 km (Triangle)<br>
+            <svg width="18" height="18"><rect width="14" height="14" x="2" y="2" fill="#3399ff" stroke="black"/></svg> 40–90 km (Square)<br>
+            <svg width="18" height="18"><circle cx="9" cy="9" r="7" fill="#ff9933" stroke="black"/></svg> 90–140 km (Circle)<br>
+            <svg width="18" height="18"><polygon points="9,1 2,16 17,6 1,6 16,16" fill="#9933cc" stroke="black"/></svg> > 140 km (Star)
         `;
-    });
-
-    return div;
-};
-
-combinedLegend.addTo(map);
-
-
-
-
-
-
-
+        return div;
+    };
+    combinedLegend.addTo(map);
 
     Papa.parse("Alaska Earthquakes to Print.csv", {
         download: true,
         header: true,
         dynamicTyping: true,
         complete: function(results) {
+            results.data.forEach(function(eq) {
+                const lat = eq.latitude;
+                const lon = eq.longitude;
+                const mag = eq.mag;
+                const depth = eq.depth;
 
-results.data.forEach(function(eq) {
+                if (!isFinite(lat) || !isFinite(lon)) return;
 
-    const lat = Number(eq.latitude);
-    const lon = Number(eq.longitude);
-    const mag = Number(eq.mag);
-    const depth = Number(eq.depth);
+                // Scale size by magnitude
+                const size = Math.max(mag * 3, 5); 
 
-    // Skip invalid rows
-    if (
-        !isFinite(lat) ||
-        !isFinite(lon) ||
-        !isFinite(mag) ||
-        !isFinite(depth)
-    ) {
-        return;
-    }
+                // Create custom SVG icon
+                var icon = L.divIcon({
+                    className: 'custom-shape-icon',
+                    html: `<svg width="${size*2}" height="${size*2}" viewBox="0 0 ${size*2} ${size*2}">${getShapeData(depth, size)}</svg>`,
+                    iconSize: [size*2, size*2],
+                    iconAnchor: [size, size] // Centers the shape
+                });
 
-    L.circleMarker([lat, lon], {
-        radius: Math.max(mag * 1.1, 2), // prevent zero/NaN radius
-        color: getColor(depth),
-        fillOpacity: 0.7
-    })
-    .bindPopup(`
-        <b>Magnitude:</b> ${mag}<br>
-        <b>Depth:</b> ${depth} km
-    `)
-    .addTo(map);
-});
-
+                L.marker([lat, lon], { icon: icon })
+                .bindPopup(`<b>Magnitude:</b> ${mag}<br><b>Depth:</b> ${depth} km`)
+                .addTo(map);
+            });
         }
     });
 </script>
-
 </body>
 </html>
