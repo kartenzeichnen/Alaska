@@ -140,15 +140,20 @@
         `;
 
         // Loop through the example magnitudes to create visual circle size indicators
-        mags.forEach(function (m) {
-            var size = Math.max(m * 1.1, 2);
+
+
+       mags.forEach(function (m) {
+            // NEW SCALING: Using power of 1.8 for dramatic visual difference
+            var size = Math.pow(m, 1.8); 
             div.innerHTML += `
-                <div>
+                <div style="margin-bottom: 8px;">
                     <span class="circle" style="width:${size * 2}px; height:${size * 2}px;"></span>
                     M ${m}
                 </div>`;
         });
         return div;
+
+
     };
     combinedLegend.addTo(map);
 
@@ -173,17 +178,20 @@
                 }
 
                 /* 8. MAPPING: Create a circle marker for each earthquake */
-                L.circleMarker([lat, lon], {
-                    radius: Math.max(mag * 1.1, 2), // Size based on Magnitude
-                    color: getColor(depth),          // Color based on Depth
-                    fillOpacity: 0.7
+
+
+               L.circleMarker([lat, lon], {
+                    radius: Math.pow(mag, 1.8), // Pronounced scaling
+                    color: getColor(depth),
+                    fillOpacity: 0.6,           // Slightly lowered to see overlapping markers
+                    weight: 1                   // Thin border for clarity
                 })
-                /* 9. POPUP: Show details when the user clicks on a circle */
-                .bindPopup(`
-                    <b>Magnitude:</b> ${mag}<br>
-                    <b>Depth:</b> ${depth} km
-                `)
+                .bindPopup(`<b>Magnitude:</b> ${mag}<br><b>Depth:</b> ${depth} km`)
                 .addTo(map);
+
+
+
+
             });
         }
     });
