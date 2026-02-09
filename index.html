@@ -77,52 +77,43 @@
 
 
 
-
-
-
-
-
-
-
-/* 3. REVISED CUSTOM GRADUATED SCALE BAR */
+/* 3. ZEBRA GRADUATED SCALE BAR */
 var CustomScale = L.Control.extend({
     options: { position: 'bottomleft' },
     onAdd: function (map) {
         var container = L.DomUtil.create('div', 'leaflet-control-scale custom-graduated-scale');
         
         // Styling the container box
-        container.style.background = 'rgba(255,255,255,0.9)';
-        container.style.padding = '10px'; // Increased padding for space
+        container.style.background = 'rgba(255,255,255,0.95)';
+        container.style.padding = '12px';
         container.style.border = '2px solid #333';
         container.style.fontSize = '12px';
         container.style.fontFamily = 'Arial, sans-serif';
-        container.style.minWidth = '120px';
+        container.style.borderRadius = '4px';
 
         var update = function () {
             var center = map.getCenter();
-            // Calculate pixel width for 250km at current latitude
+            // Calculate pixel width for 250km at Alaska's latitude
             var p1 = map.latLngToContainerPoint(center);
             var p2 = map.latLngToContainerPoint(L.latLng(center.lat, center.lng + (250 / (111.32 * Math.cos(center.lat * Math.PI / 180)))));
             var pixelWidth250km = Math.abs(p2.x - p1.x);
 
             container.innerHTML = `
-                <!-- Title with bottom margin for vertical space -->
-                <div style="font-weight:bold; margin-bottom: 20px; text-align: center;">Alaska Map Scale</div>
+                <div style="font-weight:bold; margin-bottom: 22px; text-align: center; color: #000;">Alaska Map Scale</div>
                 
-                <div style="position: relative; width:${pixelWidth250km}px; height:10px; border:2px solid black; border-top:none; display:flex;">
-                    <!-- Fixed 0km Label -->
-                    <span style="position:absolute; left:0; top:-16px; font-weight:bold;">0 km</span>
+                <div style="position: relative; width:${pixelWidth250km}px; height:12px; border:1px solid #000; display:flex;">
+                    <!-- Fixed 0 km label at the start -->
+                    <span style="position:absolute; left:0; top:-18px; font-weight:bold;">0 km</span>
                     
-                    <!-- Interval Ticks and Labels -->
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-8px; top:-16px;">50</span></div>
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-10px; top:-16px;">100</span></div>
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-10px; top:-16px;">150</span></div>
-                    <div style="flex:1; border-right:1px solid black; position:relative;"><span style="position:absolute; right:-10px; top:-16px;">200</span></div>
-                    <div style="flex:1; position:relative;"><span style="position:absolute; right:-12px; top:-16px;">250</span></div>
+                    <!-- Zebra Segments -->
+                    <div style="flex:1; background:#000; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-8px; top:-18px; color:#000;">50</span></div>
+                    <div style="flex:1; background:#fff; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px; color:#000;">100</span></div>
+                    <div style="flex:1; background:#000; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px; color:#000;">150</span></div>
+                    <div style="flex:1; background:#fff; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px; color:#000;">200</span></div>
+                    <div style="flex:1; background:#000; position:relative;"><span style="position:absolute; right:-12px; top:-18px; color:#000;">250 km</span></div>
                 </div>
 
-                <!-- Miles conversion label with top margin -->
-                <div style="margin-top: 8px; font-size: 11px; color: #444; border-top: 1px solid #ccc; pt: 4px;">
+                <div style="margin-top: 10px; font-size: 11px; text-align: center; border-top: 1px solid #bbb; padding-top: 4px;">
                     Total: ${(250 * 0.621371).toFixed(0)} miles
                 </div>
             `;
@@ -134,16 +125,6 @@ var CustomScale = L.Control.extend({
     }
 });
 map.addControl(new CustomScale());
-
-
-
-
-
-
-
-
-
-
 
 
 
