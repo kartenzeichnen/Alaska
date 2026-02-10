@@ -79,12 +79,9 @@
 
 
 
-
-
-/* 3. INTERACTIVE ZEBRA SCALE (KM/MI TOGGLE) */
+/* 3. UPDATED 400KM ZEBRA SCALE (KM/MI TOGGLE) */
 var CustomScale = L.Control.extend({
     options: { position: 'bottomleft' },
-    // Initialize with a default unit mode
     unitMode: 'km', 
 
     onAdd: function (map) {
@@ -98,52 +95,48 @@ var CustomScale = L.Control.extend({
         container.style.fontSize = '12px';
         container.style.fontFamily = 'Arial, sans-serif';
         container.style.borderRadius = '4px';
-        container.style.cursor = 'pointer'; // Visual cue that it's clickable
+        container.style.cursor = 'pointer';
         container.title = "Click to toggle Km/Miles";
 
         var update = function () {
             var center = map.getCenter();
             var isKm = self.unitMode === 'km';
             
-            // Set Target Distance based on mode
-            var targetDist = isKm ? 250 : 150; 
+            // NEW SCALES: 400km (4 segments of 100) or 240mi (4 segments of 60)
+            var targetDist = isKm ? 400 : 240; 
             var unitLabel = isKm ? 'km' : 'mi';
-            var conversionLabel = isKm ? 
-                `${(targetDist * 0.621371).toFixed(0)} miles` : 
-                `${(targetDist / 0.621371).toFixed(0)} km`;
+            var numSegments = 4;
+            var interval = targetDist / numSegments;
 
             // Calculate pixel width for the target distance
             var p1 = map.latLngToContainerPoint(center);
             var p2 = map.latLngToContainerPoint(L.latLng(center.lat, center.lng + (targetDist / (111.32 * Math.cos(center.lat * Math.PI / 180)))));
             var pixelWidth = Math.abs(p2.x - p1.x);
 
-            // Calculate intervals (Divide by 5 for graduated ticks)
-            var interval = targetDist / 5;
-
             container.innerHTML = `
                 <div style="font-weight:bold; margin-bottom: 22px; text-align: center; color: #000;">
                     Alaska Scale (${isKm ? 'Metric' : 'Imperial'})
                 </div>
                 
-                <div style="position: relative; width:${pixelWidth}px; height:12px; border:1px solid #000; display:flex;">
+                <div style="position: relative; width:${pixelWidth}px; height:14px; border:1px solid #000; display:flex;">
+                    <!-- Fixed 0 label -->
                     <span style="position:absolute; left:0; top:-18px; font-weight:bold;">0 ${unitLabel}</span>
                     
-                    <div style="flex:1; background:#000; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-8px; top:-18px;">${interval*1}</span></div>
-                    <div style="flex:1; background:#fff; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*2}</span></div>
-                    <div style="flex:1; background:#000; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*3}</span></div>
-                    <div style="flex:1; background:#fff; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*4}</span></div>
-                    <div style="flex:1; background:#000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*5}</span></div>
+                    <!-- 4 Zebra Segments (100, 200, 300, 400 km) -->
+                    <div style="flex:1; background:#000; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-10px; top:-18px;">${interval*1}</span></div>
+                    <div style="flex:1; background:#fff; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-10px; top:-18px;">${interval*2}</span></div>
+                    <div style="flex:1; background:#000; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-10px; top:-18px;">${interval*3}</span></div>
+                    <div style="flex:1; background:#fff; position:relative;"><span style="position:absolute; right:-10px; top:-18px;">${interval*4}</span></div>
                 </div>
 
                 <div style="margin-top: 10px; font-size: 11px; text-align: center; border-top: 1px solid #bbb; padding-top: 4px; color: #555;">
-                    Equivalent: ${conversionLabel} (Click to toggle)
+                    Click to toggle units
                 </div>
             `;
         };
 
-        // Add Click Listener to toggle units
         L.DomEvent.on(container, 'click', function(e) {
-            L.DomEvent.stopPropagation(e); // Prevent map click through
+            L.DomEvent.stopPropagation(e);
             self.unitMode = (self.unitMode === 'km') ? 'mi' : 'km';
             update();
         });
@@ -154,7 +147,6 @@ var CustomScale = L.Control.extend({
     }
 });
 map.addControl(new CustomScale());
-
 
 
 
