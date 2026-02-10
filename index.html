@@ -79,8 +79,7 @@
 
 
 
-
-/* 3. MULTI-COLOR INTERACTIVE ZEBRA SCALE (400KM / 240MI) */
+/* 3. INTERACTIVE SCALE WITH COMPASS SYNC */
 var CustomScale = L.Control.extend({
     options: { position: 'bottomleft' },
     unitMode: 'km', 
@@ -89,7 +88,6 @@ var CustomScale = L.Control.extend({
         var self = this;
         var container = L.DomUtil.create('div', 'leaflet-control-scale custom-graduated-scale');
         
-        // General Styling for the outer box
         container.style.background = 'rgba(255,255,255,0.95)';
         container.style.padding = '12px';
         container.style.border = '2px solid #333';
@@ -97,55 +95,41 @@ var CustomScale = L.Control.extend({
         container.style.fontFamily = 'Arial, sans-serif';
         container.style.borderRadius = '6px';
         container.style.cursor = 'pointer';
-        container.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-        container.title = "Click to toggle Km (Black) / Miles (Blue)";
 
         var update = function () {
             var center = map.getCenter();
             var isKm = self.unitMode === 'km';
             
-            // Logic: 400km (4x100) or 240mi (4x60)
             var targetDist = isKm ? 400 : 240; 
             var unitLabel = isKm ? 'km' : 'mi';
             var primaryColor = isKm ? '#000000' : '#0055ff'; // Black for KM, Blue for MI
-            var interval = targetDist / 4;
+            var accentColor = isKm ? '#cc3333' : '#0055ff';  // Red for KM, Blue for MI
+            
+            // Sync the compass color
+            compassRose.updateColor(accentColor);
 
-            // Calculate pixel width for the target distance at current latitude
             var p1 = map.latLngToContainerPoint(center);
             var p2 = map.latLngToContainerPoint(L.latLng(center.lat, center.lng + (targetDist / (111.32 * Math.cos(center.lat * Math.PI / 180)))));
             var pixelWidth = Math.abs(p2.x - p1.x);
+            var interval = targetDist / 4;
 
             container.innerHTML = `
                 <div style="font-weight:bold; margin-bottom: 22px; text-align: center; color: ${primaryColor};">
                     Alaska Scale (${isKm ? 'Kilometers' : 'Miles'})
                 </div>
-                
                 <div style="position: relative; width:${pixelWidth}px; height:14px; border:1px solid #000; display:flex;">
-                    <!-- 0 Label -->
                     <span style="position:absolute; left:0; top:-18px; font-weight:bold;">0 ${unitLabel}</span>
-                    
-                    <!-- Alternating Zebra Segments -->
-                    <div style="flex:1; background:${primaryColor}; border-right:1px solid #000; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*1}</span>
-                    </div>
-                    <div style="flex:1; background:#ffffff; border-right:1px solid #000; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*2}</span>
-                    </div>
-                    <div style="flex:1; background:${primaryColor}; border-right:1px solid #000; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*3}</span>
-                    </div>
-                    <div style="flex:1; background:#ffffff; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*4}</span>
-                    </div>
+                    <div style="flex:1; background:${primaryColor}; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*1}</span></div>
+                    <div style="flex:1; background:#ffffff; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*2}</span></div>
+                    <div style="flex:1; background:${primaryColor}; border-right:1px solid #000; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*3}</span></div>
+                    <div style="flex:1; background:#ffffff; position:relative;"><span style="position:absolute; right:-12px; top:-18px;">${interval*4}</span></div>
                 </div>
-
-                <div style="margin-top: 10px; font-size: 11px; text-align: center; border-top: 1px solid #ccc; padding-top: 4px; color: #666; font-style: italic;">
-                    Click to switch to ${isKm ? 'Miles (Blue)' : 'Kilometers (Black)'}
+                <div style="margin-top: 10px; font-size: 11px; text-align: center; border-top: 1px solid #ccc; padding-top: 4px; color: #666;">
+                    Click scale to toggle (Black/Blue)
                 </div>
             `;
         };
 
-        // Click Event to swap units
         L.DomEvent.on(container, 'click', function(e) {
             L.DomEvent.stopPropagation(e);
             self.unitMode = (self.unitMode === 'km') ? 'mi' : 'km';
@@ -167,41 +151,51 @@ map.addControl(new CustomScale());
 
 
 
+/* 4. COMPASS ROSE: Now a global variable so we can update it */
+var compassRose = L.control({ position: 'topright' });
 
+compassRose.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'compass-rose');
+    this.updateColor('#cc3333'); // Initial Red color
+    return this._div;
+};
 
-
-    /* 4. COMPASS ROSE: Create a custom control to hold an SVG graphic */
-    var compassRose = L.control({ position: 'topright' });
-
-    compassRose.onAdd = function (map) {
-        var div = L.DomUtil.create('div', 'compass-rose');
-        // SVG drawing code for the compass (circles, polygons for stars, and text labels)
-        div.innerHTML = `
-        <svg width="80" height="80" viewBox="0 0 200 200" aria-label="Compass Rose">
-            <circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="3"/>
-            <g transform="translate(100 100)">
-                <g fill="black"> <!-- Cardinal Points (N, S, E, W) -->
-                    <polygon points="0,-80 -10,0 0,-15 10,0"/>
-                    <polygon points="80,0 0,-10 15,0 0,10"/>
-                    <polygon points="0,80 -10,0 0,15 10,0"/>
-                    <polygon points="-80,0 0,-10 -15,0 0,10"/>
-                </g>
-                <g fill="#cc3333"> <!-- Intercardinal Points (NE, SE, etc.) -->
-                    <g transform="rotate(45)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                    <g transform="rotate(135)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                    <g transform="rotate(225)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                    <g transform="rotate(315)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                </g>
+// Custom method to swap the accent color of the compass
+compassRose.updateColor = function (newColor) {
+    this._div.innerHTML = `
+    <svg width="80" height="80" viewBox="0 0 200 200" aria-label="Compass Rose">
+        <circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="3"/>
+        <g transform="translate(100 100)">
+            <g fill="black"> <!-- Cardinal Points -->
+                <polygon points="0,-80 -10,0 0,-15 10,0"/>
+                <polygon points="80,0 0,-10 15,0 0,10"/>
+                <polygon points="0,80 -10,0 0,15 10,0"/>
+                <polygon points="-80,0 0,-10 -15,0 0,10"/>
             </g>
-            <text x="100" y="30" text-anchor="middle" font-size="18" font-weight="bold">N</text>
-            <text x="170" y="105" text-anchor="middle" font-size="16">E</text>
-            <text x="100" y="185" text-anchor="middle" font-size="16">S</text>
-            <text x="30" y="105" text-anchor="middle" font-size="16">W</text>
-            <circle cx="100" cy="100" r="4" fill="black"/>
-        </svg>`;
-        return div;
-    };
-    compassRose.addTo(map);
+            <g fill="${newColor}"> <!-- Dynamic Accent Color (Red or Blue) -->
+                <g transform="rotate(45)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
+                <g transform="rotate(135)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
+                <g transform="rotate(225)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
+                <g transform="rotate(315)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
+            </g>
+        </g>
+        <text x="100" y="30" text-anchor="middle" font-size="18" font-weight="bold">N</text>
+        <text x="170" y="105" text-anchor="middle" font-size="16">E</text>
+        <text x="100" y="185" text-anchor="middle" font-size="16">S</text>
+        <text x="30" y="105" text-anchor="middle" font-size="16">W</text>
+        <circle cx="100" cy="100" r="4" fill="black"/>
+    </svg>`;
+};
+compassRose.addTo(map);
+
+
+
+
+
+
+
+
+
 
     /* 5. HELPER FUNCTION: Returns a color hex code based on the earthquake's depth */
     function getColor(depth) {
