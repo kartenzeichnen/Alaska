@@ -66,13 +66,10 @@
     transform: translateX(-50%);
     z-index: 1000;
     background: white;
-    padding: 12px 20px;
+    padding: 12px 25px;
     border-radius: 8px;
     border: 2px solid rgba(0,0,0,0.2);
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    gap: 15px;
 }
 
 #yearSlider {
@@ -87,9 +84,27 @@
 <body>
 
 <div id="filter-container">
-    <label><b>Year: </b></label>
-    <input type="range" id="yearSlider" min="2024" max="2026" value="2026" step="1">
-    <span id="yearLabel" style="font-weight: bold;">2026</span>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <label><b>Year: </b></label>
+            <input type="range" id="yearSlider" min="2024" max="2026" value="2026" step="1" list="steplist">
+            <span id="yearLabel" style="font-weight: bold; width: 40px;">2026</span>
+        </div>
+        
+        <!-- The Labels below the slider -->
+        <div style="display: flex; justify-content: space-between; width: 200px; margin-left: 55px; font-size: 11px; color: #666; font-weight: bold; padding-top: 5px;">
+            <span>2024</span>
+            <span>2025</span>
+            <span>2026</span>
+        </div>
+
+        <!-- This creates the visual "tick marks" on the slider track -->
+        <datalist id="steplist">
+            <option value="2024"></option>
+            <option value="2025"></option>
+            <option value="2026"></option>
+        </datalist>
+    </div>
 </div>
 
 
