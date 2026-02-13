@@ -24,7 +24,7 @@
             color: #333;
             border-radius: 6px;
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            width: 180px;
+            width: 210px;
             font-size: 13px;
         }
 
@@ -162,11 +162,11 @@
         var mags = [3, 5, 7]; 
 
         div.innerHTML = `
-            <h4>Earthquake Depth (km)</h4>
-            <i style="background:#FCF661; border: 1px solid #ccc;"></i> 0–40<br>
-            <i style="background:#FE6100"></i> 40.1–90<br>
-            <i style="background:#DC267F"></i> 90.1–140<br>
-            <i style="background:#648FFF"></i> > 140.1
+            <h4>Earthquake Depth</h4>
+            <i style="background:#FCF661; border: 1px solid #ccc;"></i> 0–40 km (Shallow)<br>
+            <i style="background:#FE6100"></i> 40.1–90 km (Int-Shallow)<br>
+            <i style="background:#DC267F"></i> 90.1–140 km (Int-Deep)<br>
+            <i style="background:#648FFF"></i> > 140.1 km (Deep)
             <div class="divider"></div>
             <h4>Magnitude</h4>
         `;
@@ -238,3 +238,4 @@ document.getElementById('yearSlider').addEventListener('input', function(e) {
 
 </body>
 </html>
+
