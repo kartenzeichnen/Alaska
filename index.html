@@ -16,6 +16,20 @@
         body { margin:0; padding:0; }
         #mapdiv { height: 100vh; width: 100vw; }
 
+/* Style for the Title/Info box in the upper left */
+.map-title {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    max-width: 300px;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+.map-title h3 { margin: 0 0 5px; font-size: 16px; }
+.map-title p { margin: 3px 0; font-size: 12px; line-height: 1.4; }
+.map-title a { color: #0078A8; text-decoration: none; }
+
         /* Styling for the Legend box in the bottom right */
         .legend {
             background: white;
@@ -37,7 +51,6 @@
     align-items: center;
     margin-bottom: 6px; /* Space between rows */
 }
-
 
         /* Small colored squares in the legend representing depth */
 .legend i {
@@ -66,7 +79,6 @@
             border-radius: 6px;
             box-shadow: 0 0 8px rgba(0,0,0,0.3);
         }
-
 
 #filter-container {
     position: absolute;
@@ -116,7 +128,6 @@
     </div>
 </div>
 
-
 <!-- The container where the map will be injected -->
 <div id="mapdiv"></div>
 
@@ -129,6 +140,28 @@
         maxZoom: 18,
         attribution: '&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a>'
     }).addTo(map);
+
+/* Create a custom control for the Title and Data Info */
+var titleBox = L.control({ position: 'topleft' });
+
+titleBox.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'map-title');
+    div.innerHTML = `
+        <h3>Alaska Earthquake Analysis</h3>
+        <p>This map analyzes Alaska earthquakes by <b>depth</b> for the years 2024 through 2026.</p>
+        <p><b>Source:</b> <a href="
+
+https://earthquake.usgs.gov/earthquakes/search/
+
+" target="_blank">USGS Earthquake Catalog</a></p>
+        <p style="color: #666; font-style: italic; font-size: 11px; margin-top: 8px;">
+            Created by me in February 2026
+        </p>
+    `;
+    return div;
+};
+
+titleBox.addTo(map);
 
     /* 3. SCALE BAR: Adds a scale in miles/kilometers to the bottom left */
     L.control.scale({
@@ -153,7 +186,6 @@
     };
 
     compassRose.addTo(map);
-
 
 /* 5. HELPER FUNCTION: Returns a color hex code based on the earthquake's depth */
     function getColor(depth) {
@@ -219,7 +251,7 @@ Papa.parse("Alaska Earthquakes to Print.csv", {
 
                 if (isFinite(lat) && isFinite(lon)) {
                     var marker = L.circleMarker([lat, lon], {
-                        radius: Math.max(mag * 2.0, 2), 
+                        radius: Math.max(mag * 2.5, 2), 
                         fillColor: getColor(depth), // The high-contrast color
                         color: "#333",              // Dark gray border for contrast
                         weight: 0.5,                // Thin border line
@@ -247,6 +279,3 @@ document.getElementById('yearSlider').addEventListener('input', function(e) {
 
 </body>
 </html>
-
-
-
