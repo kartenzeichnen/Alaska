@@ -59,7 +59,16 @@
         }
     </style>
 </head>
+
+
 <body>
+
+<div id="filter-container" style="position: absolute; top: 10px; left: 50px; z-index: 1000; background: white; padding: 10px; border-radius: 5px; border: 2px solid rgba(0,0,0,0.2);">
+    <label><b>Year: </b></label>
+    <input type="range" id="yearSlider" min="2024" max="2026" value="2026" step="1">
+    <span id="yearLabel" style="font-weight: bold;">2026</span>
+</div>
+
 
 <!-- The container where the map will be injected -->
 <div id="mapdiv"></div>
@@ -97,6 +106,7 @@
     };
 
     compassRose.addTo(map);
+
 
     /* 5. HELPER FUNCTION: Returns a color hex code based on the earthquake's depth */
     function getColor(depth) {
@@ -136,41 +146,57 @@
     };
     combinedLegend.addTo(map);
 
-    /* 7. DATA LOADING: Use PapaParse to fetch and read the external CSV file */
-    Papa.parse("Alaska Earthquakes to Print.csv", {
-        download: true,
-        header: true,
-        dynamicTyping: true, // Automatically converts strings to numbers
-        complete: function(results) {
-            
-            // Loop through every row in the CSV
-            results.data.forEach(function(eq) {
-                // Map CSV columns to variables
-                const lat = Number(eq.latitude);
-                const lon = Number(eq.longitude);
-                const mag = Number(eq.mag);
-                const depth = Number(eq.depth);
+var allQuakes = []; // Global storage for CSV data
+var markerLayer = L.layerGroup().addTo(map); // Layer to manage markers
 
-                // DATA VALIDATION: Skip rows that have missing or broken numbers
-                if (!isFinite(lat) || !isFinite(lon) || !isFinite(mag) || !isFinite(depth)) {
-                    return;
-                }
+// 1. Load the CSV Data
+Papa.parse("Alaska Earthquakes to Print.csv", {
+    download: true,
+    header: true,
+    complete: function(results) {
+        allQuakes = results.data;
+        updateMap("2026"); // Initial display
+    }
+});
 
-                /* 8. MAPPING: Create a circle marker for each earthquake */
-                L.circleMarker([lat, lon], {
-                    radius: Math.max(mag * 1.1, 2), // Size based on Magnitude
+// 2. Function to filter and draw markers
+function updateMap(selectedYear) {
+    markerLayer.clearLayers(); // Clear previous year's markers
+    
+    allQuakes.forEach(function(row) {
+        // Only process rows that match the slider year
+        if (row.time && row.time.startsWith(selectedYear)) {
+            var lat = Number(row.latitude);
+            var lon = Number(row.longitude);
+            var mag = Number(row.mag);
+            var depth = Number(row.depth);
+
+            // Validation: Skip broken rows
+            if (isFinite(lat) && isFinite(lon)) {
+                var marker = L.circleMarker([lat, lon], {
+                    radius: Math.max(mag * 1.5, 2), // Size based on Magnitude
                     color: getColor(depth),          // Color based on Depth
-                    fillOpacity: 0.7
-                })
-                /* 9. POPUP: Show details when the user clicks on a circle */
-                .bindPopup(`
+                    fillOpacity: 0.7,
+                    weight: 1
+                }).bindPopup(`
+                    <b>Year:</b> ${selectedYear}<br>
                     <b>Magnitude:</b> ${mag}<br>
                     <b>Depth:</b> ${depth} km
-                `)
-                .addTo(map);
-            });
+                `);
+                
+                markerLayer.addLayer(marker);
+            }
         }
     });
+}
+
+// 3. Slider Event Listener
+document.getElementById('yearSlider').addEventListener('input', function(e) {
+    var year = e.target.value;
+    document.getElementById('yearLabel').innerText = year;
+    updateMap(year);
+});
+
 </script>
 
 </body>
