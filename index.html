@@ -31,14 +31,16 @@
         .legend h4 { margin: 0 0 6px; font-size: 14px; font-weight: bold; }
         .legend .divider { border-top: 1px solid #ccc; margin: 8px 0; }
 
-        /* Small colored squares in the legend representing depth */
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.8;
-        }
+       /* Small colored squares in the legend representing depth */
+	.legend i {
+    	width: 18px;
+    	height: 18px;
+    	float: left;          /* Keeps squares on the left */
+    	margin-right: 10px;   /* Consistent gap between square and text */
+    	opacity: 0.8;
+    	clear: left;          /* Forces each square onto a new line */
+    	margin-bottom: 4px;   /* Adds a tiny vertical space between rows */
+	}
 
         /* Circles in the legend representing magnitude size */
         .legend .circle {
@@ -238,4 +240,5 @@ document.getElementById('yearSlider').addEventListener('input', function(e) {
 
 </body>
 </html>
+
 
