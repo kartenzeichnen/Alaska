@@ -81,37 +81,21 @@
         metric: true
     }).addTo(map);
 
-    /* 4. COMPASS ROSE: Create a custom control to hold an SVG graphic */
+/* 4. SIMPLE COMPASS: A clean North arrow */
     var compassRose = L.control({ position: 'topright' });
 
     compassRose.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'compass-rose');
-        // SVG drawing code for the compass (circles, polygons for stars, and text labels)
         div.innerHTML = `
-        <svg width="80" height="80" viewBox="0 0 200 200" aria-label="Compass Rose">
-            <circle cx="100" cy="100" r="95" fill="white" stroke="black" stroke-width="3"/>
-            <g transform="translate(100 100)">
-                <g fill="black"> <!-- Cardinal Points (N, S, E, W) -->
-                    <polygon points="0,-80 -10,0 0,-15 10,0"/>
-                    <polygon points="80,0 0,-10 15,0 0,10"/>
-                    <polygon points="0,80 -10,0 0,15 10,0"/>
-                    <polygon points="-80,0 0,-10 -15,0 0,10"/>
-                </g>
-                <g fill="#cc3333"> <!-- Intercardinal Points (NE, SE, etc.) -->
-                    <g transform="rotate(45)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                    <g transform="rotate(135)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                    <g transform="rotate(225)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                    <g transform="rotate(315)"><polygon points="0,-60 -7,0 0,-12 7,0"/></g>
-                </g>
-            </g>
-            <text x="100" y="30" text-anchor="middle" font-size="18" font-weight="bold">N</text>
-            <text x="170" y="105" text-anchor="middle" font-size="16">E</text>
-            <text x="100" y="185" text-anchor="middle" font-size="16">S</text>
-            <text x="30" y="105" text-anchor="middle" font-size="16">W</text>
-            <circle cx="100" cy="100" r="4" fill="black"/>
-        </svg>`;
+        <svg width="50" height="50" viewBox="0 0 100 100">
+            <!-- Simple North Arrow -->
+            <polygon points="50,5 35,90 50,75 65,90" fill="black" stroke="black" stroke-width="2"/>
+            <text x="50" y="25" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="white">N</text>
+        </svg>
+        `;
         return div;
     };
+
     compassRose.addTo(map);
 
     /* 5. HELPER FUNCTION: Returns a color hex code based on the earthquake's depth */
