@@ -74,101 +74,12 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a>'
     }).addTo(map);
 
-
-
-
-
-
-
-/* 3. MULTI-COLOR INTERACTIVE ZEBRA SCALE (400KM / 240MI) */
-var CustomScale = L.Control.extend({
-    options: { position: 'bottomleft' },
-    unitMode: 'km', 
-
-    onAdd: function (map) {
-        var self = this;
-        var container = L.DomUtil.create('div', 'leaflet-control-scale custom-graduated-scale');
-        
-        // General Styling for the outer box
-        container.style.background = 'rgba(255,255,255,0.95)';
-        container.style.padding = '12px';
-        container.style.border = '2px solid #333';
-        container.style.fontSize = '12px';
-        container.style.fontFamily = 'Arial, sans-serif';
-        container.style.borderRadius = '6px';
-        container.style.cursor = 'pointer';
-        container.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-        container.title = "Click to toggle Km (Black) / Miles (Blue)";
-
-        var update = function () {
-            var center = map.getCenter();
-            var isKm = self.unitMode === 'km';
-            
-            // Logic: 400km (4x100) or 240mi (4x60)
-            var targetDist = isKm ? 400 : 240; 
-            var unitLabel = isKm ? 'km' : 'mi';
-            var primaryColor = isKm ? '#000000' : '#0055ff'; // Black for KM, Blue for MI
-            var interval = targetDist / 4;
-
-            // Calculate pixel width for the target distance at current latitude
-            var p1 = map.latLngToContainerPoint(center);
-            var p2 = map.latLngToContainerPoint(L.latLng(center.lat, center.lng + (targetDist / (111.32 * Math.cos(center.lat * Math.PI / 180)))));
-            var pixelWidth = Math.abs(p2.x - p1.x);
-
-            container.innerHTML = `
-                <div style="font-weight:bold; margin-bottom: 22px; text-align: center; color: ${primaryColor};">
-                    Alaska Scale (${isKm ? 'Kilometers' : 'Miles'})
-                </div>
-                
-                <div style="position: relative; width:${pixelWidth}px; height:14px; border:1px solid #000; display:flex;">
-                    <!-- 0 Label -->
-                    <span style="position:absolute; left:0; top:-18px; font-weight:bold;">0 ${unitLabel}</span>
-                    
-                    <!-- Alternating Zebra Segments -->
-                    <div style="flex:1; background:${primaryColor}; border-right:1px solid #000; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*1}</span>
-                    </div>
-                    <div style="flex:1; background:#ffffff; border-right:1px solid #000; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*2}</span>
-                    </div>
-                    <div style="flex:1; background:${primaryColor}; border-right:1px solid #000; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*3}</span>
-                    </div>
-                    <div style="flex:1; background:#ffffff; position:relative;">
-                        <span style="position:absolute; right:-12px; top:-18px; color:#000;">${interval*4}</span>
-                    </div>
-                </div>
-
-                <div style="margin-top: 10px; font-size: 11px; text-align: center; border-top: 1px solid #ccc; padding-top: 4px; color: #666; font-style: italic;">
-                    Click to switch to ${isKm ? 'Miles (Blue)' : 'Kilometers (Black)'}
-                </div>
-            `;
-        };
-
-        // Click Event to swap units
-        L.DomEvent.on(container, 'click', function(e) {
-            L.DomEvent.stopPropagation(e);
-            self.unitMode = (self.unitMode === 'km') ? 'mi' : 'km';
-            update();
-        });
-
-        map.on('zoomend moveend', update);
-        update();
-        return container;
-    }
-});
-map.addControl(new CustomScale());
-
-
-
-
-
-
-
-
-
-
-
+    /* 3. SCALE BAR: Adds a scale in miles/kilometers to the bottom left */
+    L.control.scale({
+        position: 'bottomleft',
+        imperial: true,
+        metric: true
+    }).addTo(map);
 
     /* 4. COMPASS ROSE: Create a custom control to hold an SVG graphic */
     var compassRose = L.control({ position: 'topright' });
@@ -229,20 +140,15 @@ map.addControl(new CustomScale());
         `;
 
         // Loop through the example magnitudes to create visual circle size indicators
-
-
-       mags.forEach(function (m) {
-            // NEW SCALING: Using power of 1.7 for dramatic visual difference
-            var size = Math.pow(m, 1.7); 
+        mags.forEach(function (m) {
+            var size = Math.max(m * 1.1, 2);
             div.innerHTML += `
-                <div style="margin-bottom: 8px;">
+                <div>
                     <span class="circle" style="width:${size * 2}px; height:${size * 2}px;"></span>
                     M ${m}
                 </div>`;
         });
         return div;
-
-
     };
     combinedLegend.addTo(map);
 
@@ -267,20 +173,17 @@ map.addControl(new CustomScale());
                 }
 
                 /* 8. MAPPING: Create a circle marker for each earthquake */
-
-
-               L.circleMarker([lat, lon], {
-                    radius: Math.pow(mag, 1.7), // Pronounced scaling
-                    color: getColor(depth),
-                    fillOpacity: 0.6,           // Slightly lowered to see overlapping markers
-                    weight: 1                   // Thin border for clarity
+                L.circleMarker([lat, lon], {
+                    radius: Math.max(mag * 1.1, 2), // Size based on Magnitude
+                    color: getColor(depth),          // Color based on Depth
+                    fillOpacity: 0.7
                 })
-                .bindPopup(`<b>Magnitude:</b> ${mag}<br><b>Depth:</b> ${depth} km`)
+                /* 9. POPUP: Show details when the user clicks on a circle */
+                .bindPopup(`
+                    <b>Magnitude:</b> ${mag}<br>
+                    <b>Depth:</b> ${depth} km
+                `)
                 .addTo(map);
-
-
-
-
             });
         }
     });
