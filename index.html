@@ -108,12 +108,14 @@
     <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <label><b>Year: </b></label>
-            <input type="range" id="yearSlider" min="2024" max="2026" value="2026" step="1" list="steplist">
+            <input type="range" id="yearSlider" min="2022" max="2026" value="2026" step="1" list="steplist">
             <span id="yearLabel" style="font-weight: bold; width: 40px;">2026</span>
         </div>
         
         <!-- The Labels below the slider -->
         <div style="display: flex; justify-content: space-between; width: 200px; margin-left: 55px; font-size: 11px; color: #666; font-weight: bold; padding-top: 5px;">
+            <span>2022</span>
+            <span>2023</span>
             <span>2024</span>
             <span>2025</span>
             <span>2026</span>
@@ -121,6 +123,8 @@
 
         <!-- This creates the visual "tick marks" on the slider track -->
         <datalist id="steplist">
+            <option value="2022"></option>
+            <option value="2023"></option>
             <option value="2024"></option>
             <option value="2025"></option>
             <option value="2026"></option>
@@ -148,12 +152,8 @@ titleBox.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'map-title');
     div.innerHTML = `
         <h3>Alaska Earthquake Analysis</h3>
-        <p>This map analyzes Alaska earthquakes by <b>depth</b> for the years 2024 through 2026.</p>
-        <p><b>Source:</b> <a href="
-
-https://earthquake.usgs.gov/earthquakes/search/
-
-" target="_blank">USGS Earthquake Catalog</a></p>
+        <p>This map analyzes Alaska earthquakes by <b>depth</b> for the years 2022 through 2026.</p>
+        <p><b>Source:</b> <a href="https://earthquake.usgs.gov/earthquakes/search/" target="_blank">USGS Earthquake Catalog</a></p>
         <p style="color: #666; font-style: italic; font-size: 11px; margin-top: 8px;">
             Created by me in February 2026
         </p>
@@ -187,6 +187,7 @@ titleBox.addTo(map);
 
     compassRose.addTo(map);
 
+
 /* 5. HELPER FUNCTION: Returns a color hex code based on the earthquake's depth */
 function getColor(depth) {
     if (depth <= 40) return "#FFFF00";    // Shallow = Bright Yellow
@@ -194,6 +195,7 @@ function getColor(depth) {
     if (depth <= 140) return "#FF0000";   // Deep = Red 
     return "#4B0082";                     // Very Deep = Indigo/Dark Blue
 }
+
 
     /* 6. LEGEND: Create the box that explains colors and circle sizes */
     var combinedLegend = L.control({ position: "bottomright" });
@@ -229,7 +231,7 @@ var allQuakes = []; // Global storage for CSV data
 var markerLayer = L.layerGroup().addTo(map); // Layer to manage markers
 
 // 7. Load the CSV Data
-Papa.parse("Alaska Earthquakes to Print.csv", {
+Papa.parse("Earthquakes.csv", {
     download: true,
     header: true,
     complete: function(results) {
@@ -279,4 +281,3 @@ document.getElementById('yearSlider').addEventListener('input', function(e) {
 
 </body>
 </html>
-
